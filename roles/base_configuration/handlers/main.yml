@@ -1,5 +1,6 @@
 ---
 - name: restart rngd
+<<<<<<< HEAD
   service: name=rngd state=restarted
 
 - name: restart ntpdate
@@ -9,3 +10,8 @@
   systemd:
     state: restarted
     name: systemd-logind
+=======
+  service: 
+    name: rngd 
+    state: restarted
+>>>>>>> 35c7b3b4f6ff591be67c396d6845acc8b8a0f3c4

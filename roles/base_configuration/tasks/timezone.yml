@@ -4,6 +4,7 @@
     name: tzdata
     state: latest
 
+<<<<<<< HEAD
 - name: Delete the localtime file
   file:
     path: /etc/localtime
@@ -18,3 +19,12 @@
     force: yes
     follow: no
     state: link
+=======
+- name: Creation of symlink for localtime
+  file:  
+    src: /etc/localtime
+    dest: /usr/share/zoneinfo/Etc/UTC
+    owner: root
+    group: root
+    state: link
+>>>>>>> 35c7b3b4f6ff591be67c396d6845acc8b8a0f3c4

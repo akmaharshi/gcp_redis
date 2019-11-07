@@ -1,7 +1,11 @@
 ---
 - name: copy urandom init file
   template: 
+<<<<<<< HEAD
     src: urandom
+=======
+    src: ******** 
+>>>>>>> 35c7b3b4f6ff591be67c396d6845acc8b8a0f3c4
     dest: /etc/init.d/
     group: root
     owner: root
@@ -14,5 +18,12 @@
     state: file
     mode: 0755
 
+<<<<<<< HEAD
 - name: ensure urandom service is restarted
   shell: /etc/init.d/urandom start
+=======
+- name: ensure redis service is restarted
+  service: 
+    name: urandom 
+    state: restarted
+>>>>>>> 35c7b3b4f6ff591be67c396d6845acc8b8a0f3c4

@@ -1,4 +1,5 @@
 ---
+<<<<<<< HEAD
 - name: ensure "kernel" with right permissions
   file: 
     path: /sys/kernel/mm/transparent_hugepage/enabled
@@ -20,6 +21,13 @@
 
 - name: enable rules for transparent-hugepage-defrag  for  always/never
   shell: echo never > /sys/kernel/mm/transparent_hugepage/defrag
+=======
+- name: enable rules for transparent_hugepages for  always/never
+  shell: /sys/kernel/mm/transparent_hugepage/enabled
+
+- name: enable rules for transparent-hugepage-defrag  for  always/never
+  shell: /sys/kernel/mm/transparent_hugepage/defrag
+>>>>>>> 35c7b3b4f6ff591be67c396d6845acc8b8a0f3c4
 
 - name: Install rng-tools package
   yum:
@@ -28,6 +36,12 @@
 
 - name: Configure "/usr/lib/systemd/system/rngd.service" from current prod config
   template: 
+<<<<<<< HEAD
     src: rngd.service
     dest: /usr/lib/systemd/system/rngd.service
   notify: restart rngd
+=======
+    src: rngd.service.conf
+    dest: /usr/lib/systemd/system/rngd.service
+  notify: restart rngd
+>>>>>>> 35c7b3b4f6ff591be67c396d6845acc8b8a0f3c4

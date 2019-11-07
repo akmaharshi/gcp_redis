@@ -27,6 +27,7 @@
     group: src
     state: directory
     recurse: yes
+<<<<<<< HEAD
     mode: 0775
 
 - name: Copy the configuration file
@@ -45,12 +46,24 @@
   command: "/sbin/swapoff /dev/xvde3"
   when: swap_info.stat.exists == true
   
+=======
+    mode: 0755
+
+*- name: Copy the configuration file
+  template: src=config.xml dest=/etc/selinux/config
+  notify: restart selinux
+
+- name: Swap off xvde3
+  shell: "/sbin/swapoff /dev/xvde3"
+
+>>>>>>> 35c7b3b4f6ff591be67c396d6845acc8b8a0f3c4
 - name: Comment sda3 in fstab file
   replace:
     path: /etc/fstab
     regexp: '(.*/dev/sda3.*)'
     replace: '#\1'
 
+<<<<<<< HEAD
 - name: ensure "modprobe" with right permissions
   file:
     path: /etc/modprobe.d/modprobe.conf
@@ -61,6 +74,15 @@
 
 - name: Disable file systems you don't need
   command: echo "install {{ item }} /bin/true" >> /etc/modprobe.d/modprobe.conf
+=======
+- name: Ensure swap file doesn't exist (if configured).
+  file:
+    path: "{{ swap_file_path }}"
+    state: absent
+
+- name: Disable file systems you don't need
+  shell: install "{{ item }}" /bin/true
+>>>>>>> 35c7b3b4f6ff591be67c396d6845acc8b8a0f3c4
   with_items: 
     - cramfs
     - freexvfs
@@ -68,4 +90,8 @@
     - hfs
     - hfsplus
     - squashfs
+<<<<<<< HEAD
     - udf
+=======
+    - udf
+>>>>>>> 35c7b3b4f6ff591be67c396d6845acc8b8a0f3c4
