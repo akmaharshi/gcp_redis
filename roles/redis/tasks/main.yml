@@ -1,27 +1,184 @@
-  - name: download latest stable redis
-    yum: name=https://s3.amazonaws.com/runscope-packages/redis-3.2.10-2.el7.x86_64.rpm
+---
+- name: create redis group
+  group: 
+    name: redisdb 
+    state: present 
+    system: yes
 
-  - name: create redis group
-    group: name=redis state=present system=yes
+- name: create redis user
+  user: 
+    name: redis 
+    group: redisdb
+    createhome: yes 
+    home: /mnt/redis 
+    shell: /bin/bash 
+    system: yes 
+    state: present
 
-  - name: create redis user
-    user: name=redis group=redis createhome=no shell=/bin/false system=yes state=present
+- name: make sure that /redis exists
+  file:
+    path: /mnt/redis
+    state: directory
+    mode: 0755
+    group: redisdb
+    owner: redis
 
-  - name: make sure that /mnt/redis/redis exists
-    file: path=/mnt/redis/redis-{{ redis_port }} state=directory mode=0755 group=redis owner=redis
+- name: Read device information
+  parted: device=/dev/sdb 
+  register: sdb_info
 
-  - name: make sure redis.log file exists
-    copy: src=templates/redis.log dest=/var/log/redis/redis-{{ redis_port }}.log owner=redis group=redis mode=0644
+- debug:
+    msg: "{{ sdb_info.partitions }}"
 
-  - name: copy redis.conf file
-    copy: src=templates/redis.conf dest=/etc/redis-{{ redis_port }}.conf group=redis owner=redis
+- set_fact: 
+    sdb_part: "{{ sdb_info.partitions }}"
 
-  - name: copy custom template
-    template: src=templates/redis.local.conf.j2 dest=/etc/redis/redis.local.conf group=redis owner=redis
+- name: Create a new primary partition
+  parted:
+    device: /dev/sdb
+    number: 1
+    state: present
+  when: sdb_info.partitions == "[]"
+  
 
-  - name: copy redis-local script
-    template: src=templates/redis-local.j2 dest=/usr/local/bin/redis-local mode=0755
+- name: install xfsprogs
+  yum: 
+    pkg: xfsprogs
+    state: latest
 
-  - name: ensure redis service is restarted
-    service: name=redis state=restarted
+- name: Create redis filesystem
+  filesystem:
+    fstype: xfs
+    dev: /dev/sdb
 
+- name: Mount redis filesystem
+  mount:
+    path: /mnt/redis
+    src: /dev/sdb
+    fstype: xfs
+    opts: discard,defaults,nofail
+    state: mounted
+
+- name: install the redis rpm
+  yum:
+   name: https://s3.amazonaws.com/runscope-packages/redis-3.2.10-2.el7.x86_64.rpm
+   state: present
+ 
+- name: setting log dir permission
+  file:
+    path: /var/log/redis
+    owner: redis
+    group: redisdb
+    mode: 755
+    state: directory
+
+- name: make sure that /redis/data exists
+  file:
+    path: /redis/data
+    state: directory
+    mode: 0755
+    group: redisdb
+    owner: redis
+    
+- name: creating service directory
+  file:
+    path: /mnt/redis/{{item}}
+    owner: redis
+    group: redisdb
+    mode: 0755
+    state: directory
+  with_items:
+     - "{{ service_name_list }}"
+
+- name: creating soft link
+  file:
+    path: /var/lib/{{item}}
+    src: /mnt/redis/{{item}} 
+    state: link
+    force: yes
+  with_items:
+     - "{{ service_name_list }}"
+
+- name: copy redis config file
+  template:
+    src: redis.conf 
+    dest: /etc/{{item.0}}.conf
+    mode: preserve
+    owner: redis
+    group: redisdb
+  with_together:
+     - "{{ service_name_list }}"
+     - "{{ service_port_list }}"
+
+#- name: redis config file permissions
+ # file:
+  #  path: /etc/{{item}}.conf
+   # state: file
+   # mode: 0755
+   # owner: redis
+   # group: redisdb
+ # with_items:
+  #   - "{{ service_name_list }}"
+
+- name: copy redis init file
+  template:
+    src: redis.init
+    dest: /etc/init.d/{{item.0}}
+    mode: preserve
+    owner: redis
+    group: redisdb
+  with_together:
+     - "{{ service_name_list }}"
+     - "{{ service_port_list }}"
+
+- name: create log file
+  file:
+    path: /var/log/redis
+    state: directory
+    mode: 0755 
+    group: redisdb
+    owner: redis
+
+- name: create log file
+  file:
+    path: /var/log/redis/{{item}}.log
+    state: touch
+    mode: 0644
+    group: redisdb
+    owner: redis
+  with_items:
+     - "{{ service_name_list }}"
+
+- name: disable setenforce for multiple redis services to run
+  shell: "setenforce 0"
+
+- name: create system services for redis
+  template:
+    src: redis.service
+    dest: /usr/lib/systemd/system/{{item}}.service
+    mode: preserve
+    group: root
+    owner: root
+  with_items:
+     - "{{ service_name_list }}"
+
+- name: enable redis service
+  systemd:
+    name: "{{item}}"
+    enabled: yes
+  with_items:
+     - "{{ service_name_list }}" 
+
+- name: Starting the service
+  systemd: 
+    name: "{{item}}"
+    state: started 
+    enabled: yes
+  with_items:
+     - "{{ service_name_list }}"
+
+- name: wait for redis to start
+  wait_for:
+    port: "{{item}}"
+  with_items:
+     - "{{ service_port_list }}"

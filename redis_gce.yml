@@ -1,0 +1,105 @@
+- name: Compute Engine Instance Examples
+  hosts: localhost
+  gather_facts: no
+  vars_files:
+    - redis_vars/auth
+    - redis_vars/machines
+    - redis_vars/zone
+
+  tasks:
+
+    - name: create a root disk
+      gcp_compute_disk:
+        name: redis-root
+        size_gb: 100
+        source_image: "{{ image }}"
+        zone: "{{ zone }}"
+        project: "{{ gcp_project }}"
+        auth_kind: "{{ gcp_cred_kind }}"
+        service_account_file: "{{ gcp_cred_file }}"
+        state: present
+
+    - name: create a redis disk
+      gcp_compute_disk:
+        name: "{{ item }}-disk"
+        size_gb: 75
+        zone: "{{ zone }}"
+        project: "{{ gcp_project }}"
+        auth_kind: "{{ gcp_cred_kind }}"
+        service_account_file: "{{ gcp_cred_file }}"
+        state: present
+      with_items: "{{ redis_machines.split(',') }}"
+
+    - name: create multiple instances
+      gce:
+        instance_names: "{{ redis_machines }}"
+        zone: "{{ zone }}"
+        machine_type: "{{ machine_type }}"
+        image: "{{ image }}"
+        state: present
+        disk_auto_delete: true
+        service_account_email: "{{ service_mail }}"
+        credentials_file: "{{ gcp_cred_file }}"
+        project_id: "{{ gcp_project }}"
+        network: "{{ gce_net }}"
+        subnetwork: "{{ gce_net }}"
+        service_account_permissions:
+          - https://www.googleapis.com/auth/ndev.clouddns.readwrite
+          - https://www.googleapis.com/auth/compute
+          - https://www.googleapis.com/auth/devstorage.read_only
+          - https://www.googleapis.com/auth/logging.write
+          - https://www.googleapis.com/auth/monitoring
+          - https://www.googleapis.com/auth/servicecontrol
+          - https://www.googleapis.com/auth/service.management.readonly
+          - https://www.googleapis.com/auth/trace.append
+      register: gce
+
+    - name: Attach disks to existing instances
+      gce_pd:
+        instance_name: "{{ item.1.name }}"
+        name: "{{ item.0 }}-disk"
+        project_id: "{{ gcp_project }}"
+        mode: READ_WRITE
+        service_account_email: "{{ service_mail }}"
+        delete_on_termination: yes
+        zone: "{{ zone }}"
+        pem_file: "{{ gcp_cred_file }}"
+        state: present
+      with_together: 
+        - "{{ redis_machines.split(',') }}"
+        - "{{ gce.instance_data }}"
+
+
+    - name: Add tags to the instances
+      gce_tag:
+        instance_name: "{{ item }}"
+        tags: dev-allow-ssh
+        zone: "{{ zone }}"
+        state: present
+        pem_file: "{{ gcp_cred_file }}"
+        project_id: "{{ gcp_project }}"
+        service_account_email: "{{ service_mail }}"
+      with_items: "{{ redis_machines.split(',') }}"
+
+    - name: Save host data
+      add_host:
+        hostname: "{{ item.public_ip }}"
+        groupname: redis_instances_ips
+      with_items: "{{ gce.instance_data }}"
+
+    - name: Wait for SSH for instances
+      wait_for:
+        delay: 1
+        host: "{{ item.public_ip }}"
+        port: 22
+        state: started
+        timeout: 30
+      with_items: "{{ gce.instance_data }}"
+
+- name: Configure Hosts
+  hosts: redis_instances_ips
+  become: yes
+  become_method: sudo
+  roles:
+    - base_configuration
+    - redis

@@ -1,0 +1,2 @@
+export REALM=stage
+export RUNSCOPE_HOME=/usr/local/runscope

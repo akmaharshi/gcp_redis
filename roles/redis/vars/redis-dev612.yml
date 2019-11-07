@@ -7,10 +7,10 @@ auto_aof_rewrite_percentage: 100
 auto_aof_rewrite_min_size: 64mb
 service_port: 6767
 service_name_list:
-    - redis
-    - redis-calculon
-    - redis-radar-results
+  - redis-queue-4
+  - redis-calculon-scheduler-1
+  - redis-calculon-scheduler-2
 service_port_list:
-    - 6379
-    - 6381
-    - 6382
+  - 6393
+  - 6394
+  - 6395

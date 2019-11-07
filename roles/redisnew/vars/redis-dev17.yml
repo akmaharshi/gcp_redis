@@ -11,6 +11,6 @@ service_name_list:
     - redis-calculon
     - redis-radar-results
 service_port_list:
-    - 6379
-    - 6381
-    - 6382
+    - 6604
+    - 6606
+    - 6607

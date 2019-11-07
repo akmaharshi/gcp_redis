@@ -1,0 +1,7 @@
+Welcome to Stage!
+
+Size: medium        CPU: Xeon E5-2670 v2 @ 2.50GHz   Distro: CentOS 7
+Zone: us-central-1a        RAM: 16 GB                    Kernel: 123
+
+Realm: Stage
+Services: Mongo

@@ -1,0 +1,11 @@
+---
+- name: restart rngd
+  service: name=rngd state=restarted
+
+- name: restart ntpdate
+  service: name=ntpdate state=restarted
+
+- name: restart systemd-logind
+  systemd:
+    state: restarted
+    name: systemd-logind

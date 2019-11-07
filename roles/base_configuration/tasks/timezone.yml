@@ -1,0 +1,20 @@
+---
+- name: Install the tzdata package
+  yum:
+    name: tzdata
+    state: latest
+
+- name: Delete the localtime file
+  file:
+    path: /etc/localtime
+    state: absent
+
+- name: Creation of symlink for localtime
+  file:  
+    src: /usr/share/zoneinfo/Etc/UTC
+    dest: /etc/localtime
+    owner: root
+    group: root
+    force: yes
+    follow: no
+    state: link

@@ -1,0 +1,8 @@
+---
+# Google Compute Engine required authentication global variables
+# (Replace 'YOUR_PROJECT_ID' with the Project ID used in creating your GCP project.)
+gcp_project: esd-runscope-prd
+gcp_cred_file: ~/serviceaccounts/esd-runscope-prd-b988a58a9b00.json
+gcp_cred_kind: serviceaccount
+service_mail: 205527969478-compute@developer.gserviceaccount.com
+ssh_key: ansiuser:ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCgGlKCCH3EPEwRjY9CX4WGjYaZmRBC5ISBXSEJeUwdoBn5TgMvgGKoLPu2g9X3OJLRSrejxlhpSTKakkMzFawF7e1r2RW+u3wwb2rSdVDvJiQQuLB67kkT6eAf5jdxGbefowu8uFTileL+4KeArAGKXQSiqCgWtkx5lRD2j6FH3jtFwykPnnWzOHiVLEw0nfYMamQuNw3d0MPkZA7VWJb+MarDo6unIy0+wlEFI5aVlok0RAiAFlYsKAJsUgAwYEdXPnFVa1yaw6BfCFzX9WEmGEgzLklIKPQIFPk8uYERgjJuBA39E2C0D85VkorNR4oD2gCQJxozhg0NdBVvmH9d ansiusr@ansible-prd

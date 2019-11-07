@@ -1,0 +1,15 @@
+[redis_hosts]
+localhost ansible_connection=local
+#redis-dev1 35.226.191.37
+#redis-dev7 35.239.65.173
+
+[redis-dev17]
+localhost ansible_connection=local
+#redis-dev1 35.226.191.37
+##redis-dev7 35.239.65.173
+
+[redis-dev28]
+localhost ansible_connection=local
+#35.184.176.123
+#10.2.2.2 
+#30.3.3.3 ansible_ssh_user=centos ansible_ssh_pass=centos@123

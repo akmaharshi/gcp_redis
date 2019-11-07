@@ -1,0 +1,11 @@
+/var/log/redis/*.log {
+  daily
+  missingok
+  notifempty
+  create 644 redis redis
+  sharedscripts
+  postrotate
+    [ -x /etc/init.d/beaver ] && /usr/bin/systemctl restart beaver
+    sleep 2
+  endscript
+}

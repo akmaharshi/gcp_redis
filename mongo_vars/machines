@@ -1,0 +1,5 @@
+---
+# Common Compute Engine instance variables
+machine_type: n1-standard-4
+image: https://www.googleapis.com/compute/v1/projects/centos-cloud/global/images/centos-7-v20190619
+mongo_machines: mongostg-config-01,mongostg-config-02,mongostg-config-03,mongostg-router-01,mongostg-shard-a01,mongostg-shard-b01,mongostg-shard-c01,mongostg-shard-a02,mongostg-shard-b02,mongostg-shard-c02,mongostg-shard-a03,mongostg-shard-b03,mongostg-shard-c03,mongostg-shard-a04,mongostg-shard-b04,mongostg-shard-c04,mongostg-shard-a05,mongostg-shard-b05,mongostg-shard-c05,mongostg-shard-a06,mongostg-shard-b06,mongostg-shard-c06,mongostg-shard-a07,mongostg-shard-b07,mongostg-shard-c07,mongostg-shard-a08,mongostg-shard-b08,mongostg-shard-c08,mongostg-shard-a09,mongostg-shard-b09,mongostg-shard-c09,mongostg-shard-a10,mongostg-shard-b10,mongostg-shard-c10 

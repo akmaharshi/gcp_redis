@@ -2,6 +2,4 @@
 # Common Compute Engine instance variables
 machine_type: n1-standard-1
 image: https://www.googleapis.com/compute/v1/projects/centos-cloud/global/images/centos-7-v20190619
-machines:
-  - redis1
-  - redis2
+redis_machines: redis01,redis02,redis03,redis04,redis05

@@ -1,0 +1,70 @@
+---
+- name: install necessary packages
+  yum:
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - audit
+    - audit-libs
+    - tcp_wrappers
+
+- name: Uninstall packages
+  yum:
+    name: "{{ item }}"
+    state: absent
+  with_items:
+    - bind
+    - dovecot
+    - net-snmp
+    - openldap-clients    
+    - openldap-servers
+    - rsh
+    - rsh-server
+    - samba
+    - squid
+    - talk
+    - talk-server
+    - telnet-server
+    - tftp
+    - tftp-server
+    - xinetd
+    - ypbind
+    - ypserv
+
+- name: Configure Audit rules
+  template:
+    src: audit.rules
+    dest: /etc/audit/
+
+- name: Stop Services cups and ip6tables
+  service:
+    name: "{{ item }}"
+  with_items:
+    - cups
+    - ip6tables
+
+- name: Configure limits.d
+  template:
+    src: 20-nproc.conf
+    dest: /etc/security/limits.d/
+
+- name: Configure Modprobe rules
+  template:
+    src: "{{ item }}"
+    dest: /etc/modprobe.d/
+  with_items:
+    - ixgbevf.conf
+    - tuned.conf
+    - dccp-blacklist.conf
+    - mlx4.conf
+    - truescale.conf  
+
+- name: Install Open-ssl
+  yum:
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - krb5-libs
+    - krb5-devel
+    - openssl
+    - openssl-devel

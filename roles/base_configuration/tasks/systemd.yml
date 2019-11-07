@@ -1,0 +1,106 @@
+---
+- name: disable RemoveIPC in "/etc/systemd/logind.conf"
+  lineinfile:
+    path: /etc/systemd/logind.conf
+    regexp: '^RemoveIPC '
+    insertafter: '^#RemoveIPC '
+    line: RemoveIPC=no
+  notify: restart systemd-logind
+
+- name: disable the defaule "ntpd"
+  yum:
+    name: ntp
+    state: absent
+
+- name: install and configure "ntpdate"
+  yum:
+    name: ntpdate
+    state: present
+  notify: restart ntpdate
+
+- name: Creates an entry like "PATH" on top of crontab
+  cron:
+    name: PATH
+    env: yes
+    job: /usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/runscope/ops-tools/bin
+
+- name: Creates an entry like "REALM" on top of crontab
+  cron:
+    name: REALM
+    env: yes
+    job: stage
+
+- name: Add it in the crontab as per prod
+  cron:
+    name: "cron for ntpdate"
+    minute: "27"
+    hour: "2,6,10,14,18,22"
+    job: "cronic ntpdate -s 0.centos.pool.ntp.org 1.centos.pool.ntp.org 2.centos.pool.ntp.org"
+
+- name: install and configure "/etc/motd" from current prod config
+  template:
+    src: motd
+    dest: /etc/
+    mode: 0644
+
+- name: Install and configure "logrotate"
+  yum:
+    name: logrotate
+    state: present
+
+- name: install and configure "/etc/logrotate.conf" from current prod config
+  template:
+    src: logrotate.conf
+    dest: /etc/
+
+- name: install and configure "/etc/logrotate.d/syslog" from current prod config
+  template:
+    src: syslog
+    dest: /etc/logrotate.d/syslog
+
+- name: Creates an entry like "PATH" on top of crontab
+  cron:
+    name: PATH
+    env: yes
+    job: /usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/runscope/ops-tools/bin
+
+- name: Creates an entry like "REALM" on top of crontab
+  cron:
+    name: REALM
+    env: yes
+    job: stage
+
+- name: Add it in the crontab as per prod
+  cron:
+    name: "cron for logrotate"
+    minute: "29"
+    hour: "8"
+    job: "cronic /usr/sbin/logrotate /etc/logrotate.conf"
+
+- name: Install "daemonize"
+  yum:
+    name: daemonize
+    state: present
+
+- name: Copy /etc/profile.d/logging.sh
+  template:
+    src: logging.sh
+    dest: /etc/profile.d/logging.sh
+
+- name: Copy /etc/profile.d/nano.sh
+  template:
+    src: nano.sh
+    dest: /etc/profile.d/nano.sh
+
+- name: Copy /etc/profile.d/colors.sh
+  template:
+    src: colors.sh
+    dest: /etc/profile.d/colors.sh
+
+- name: Copy /etc/environment
+  template:
+    src: environment
+    dest: /etc/environment
+
+- name: set-console-log-level
+  command: /bin/dmesg -n 8

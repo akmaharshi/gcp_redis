@@ -1,0 +1,80 @@
+#! /bin/sh
+### BEGIN INIT INFO
+# Provides:           <%= @service_name %>
+# Required-Start:     $syslog $remote_fs
+# Required-Stop:      $syslog $remote_fs
+# Should-Start:       $local_fs
+# Should-Stop:        $local_fs
+# Default-Start:      2 3 4 5
+# Default-Stop:       0 1 6
+# Short-Description:  <%= @service_name %> - Persistent key-value database
+# Description:        <%= @service_name %> - Persistent key-value database server on port <%= @port %>
+### END INIT INFO
+
+# Source function library.
+. /etc/init.d/functions
+
+RETVAL=0
+PIDFILE=/var/run/<%= @service_name %>.pid
+CONFIGFILE=/etc/<%= @service_name %>.conf
+PORT=<%= @port %>
+
+NAME=<%= @service_name %>
+DESC="Redis database server on port $PORT"
+DAEMON=/usr/bin/redis-server
+USER=redis
+LOCKFILE=/var/lock/subsys/$NAME
+
+# Source config
+if [ -f /etc/sysconfig/$NAME ] ; then
+    . /etc/sysconfig/$NAME
+fi
+
+start() {
+  [ -x $DAEMON ] || exit 5
+
+  umask 077
+  ulimit -n 65536
+
+  echo -n $"Starting $DESC: "
+  daemon --user="$USER" --pidfile="$PIDFILE" $DAEMON $CONFIGFILE
+  RETVAL=$?
+  echo
+  [ $RETVAL -eq 0 ] && touch $LOCKFILE
+  return $RETVAL
+}
+stop() {
+  echo -n $"Shutting down $DESC: "
+  killproc -p "$PIDFILE" $DAEMON
+  RETVAL=$?
+  echo
+  [ $RETVAL -eq 0 ] && rm -f $LOCKFILE
+  return $RETVAL
+}
+rhstatus() {
+  status -p "$PIDFILE" -l $NAME $DAEMON
+}
+restart() {
+  stop
+  start
+}
+
+case "$1" in
+  start)
+    start
+    ;;
+  stop)
+    stop
+    ;;
+  restart|force-reload)
+    restart
+    ;;
+  status)
+    rhstatus
+    ;;
+  *)
+    echo $"Usage: $0 {start|stop|restart|force-reload|status}"
+    exit 3
+esac
+
+exit $?

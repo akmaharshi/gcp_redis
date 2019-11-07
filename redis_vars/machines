@@ -1,0 +1,7 @@
+---
+# Common Compute Engine instance variables
+machine_type: n1-standard-1
+image: https://www.googleapis.com/compute/v1/projects/centos-cloud/global/images/centos-7-v20190619
+#redis_machines: redis-dev1,redis-dev2,redis-dev3,redis-dev4,redis-dev5,redis-dev6,redis-dev7,redis-dev8,redis-dev9,redis-dev10,redis-dev11,redis-dev12
+redis_machines: redis-dev01,redis-dev07
+gce_net: dev

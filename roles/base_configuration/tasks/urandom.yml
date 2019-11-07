@@ -1,0 +1,18 @@
+---
+- name: copy urandom init file
+  template: 
+    src: urandom
+    dest: /etc/init.d/
+    group: root
+    owner: root
+
+- name: ensure "urandom" with right permissions
+  file: 
+    path: /etc/init.d/urandom
+    owner: root
+    group: root
+    state: file
+    mode: 0755
+
+- name: ensure urandom service is restarted
+  shell: /etc/init.d/urandom start

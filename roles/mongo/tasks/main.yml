@@ -1,21 +1,108 @@
-  - name: download latest stable mongo
-    yum: name=https://runscope-packages.s3.amazonaws.com/mongodb-org-server-4.2.0-1.el7.x86_64.rpm
+---
+- name: create mongo group
+  group: 
+    name: mongodba 
+    state: present 
+    system: yes
 
-  - name: create mongo group
-    group: name=mongo state=present system=yes
+- name: create mongo user
+  user: 
+    name: mongo 
+    group: mongodba
+    createhome: yes 
+    home: /mongo 
+    shell: /bin/bash 
+    system: yes 
+    state: present
 
-  - name: create mongo user
-    user: name=mongo group=mongo createhome=no shell=/bin/false system=yes state=present
+- name: make sure that /mongo exists
+  file:
+    path: /mongo
+    state: directory
+    mode: 0755
+    group: mongodba
+    owner: mongo
 
-  - name: make sure that /mongo/data exists
-    file: path=/mongo/data state=directory mode=0755 group=mongo owner=mongo
+- name: Read device information
+  parted: device=/dev/sdb 
+  register: sdb_info
 
-  - name: make sure that /mongo/logs exists
-    file: path=/mongo/logs state=directory mode=0755 group=mongo owner=mongo
+- debug:
+    msg: "{{ sdb_info.partitions }}"
 
-  - name: make sure that /mongo/audit exists
-    file: path=/mongo/audit state=directory mode=0755 group=mongo owner=mongo
+- set_fact: 
+    sdb_part: "{{ sdb_info.partitions }}"
 
-  - name: ensure mongo service is restarted
-    service: name=mongod state=restarted
+- name: Create a new primary partition
+  parted:
+    device: /dev/sdb
+    number: 1
+    state: present
+  when: sdb_info.partitions == "[]"
+  
+
+- name: install xfsprogs
+  yum: 
+    pkg: xfsprogs
+    state: latest
+
+- name: Create mongo filesystem
+  filesystem:
+    fstype: xfs
+    dev: /dev/sdb
+
+- name: Mount mongo filesystem
+  mount:
+    path: /mongo
+    src: /dev/sdb
+    fstype: xfs
+    opts: discard,defaults,nofail
+    state: mounted
+
+- name: download and unarchive mongo
+  unarchive:
+    src: https://mongodbstageprod.s3.amazonaws.com/mongodb-linux-x86_64-rhel70-4.2.1.tgz
+    dest: /mongo
+    remote_src: yes
+    
+- name: make sure that /mongo/mongodb-linux-x86_64-rhel70-4.2.1 with right permissions
+  file: 
+    path: /mongo/mongodb-linux-x86_64-rhel70-4.2.1
+    state: directory
+    mode: 0755
+    recurse: yes
+    group: mongodba
+    owner: mongo
+
+- name: make sure that /mongo/data exists
+  file:
+    path: /mongo/data
+    state: directory
+    mode: 0755
+    group: mongodba
+    owner: mongo
+    
+- name: make sure that /mongo/logs exists
+  file: 
+    path: /mongo/logs
+    state: directory
+    mode: 0755
+    group: mongodba
+    owner: mongo
+
+- name: make sure that /mongo/cert exists
+  file:
+    path: /mongo/cert
+    state: directory
+    mode: 0755
+    group: mongodba
+    owner: mongo
+
+- name: make sure that /mongo/audit exists
+  file: 
+    path: /mongo/audit
+    state: directory
+    mode: 0755
+    group: mongodba
+    owner: mongo
 
