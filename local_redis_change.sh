@@ -32,7 +32,19 @@ if [[ ! " ${VALID_REDIS_PORTS[@]} " =~ " ${REDIS_PORT} " ]]; then
 fi
 
 case "$REDIS_PORT" in
-    "6379") master_hosts="us-east4-b:test-redis3" slave_hosts="us-east4-b:test-redis2"
+    "6379") master_hosts="us-east4-a:test-redis1" slave_hosts="us-east4-a:test-redis2"
+    ;;
+    "6380") master_hosts="us-east4-a:test-redis3" slave_hosts="us-east4-a:test-redis4"
+    ;;
+    "6381") master_hosts="us-east4-a:test-redis5" slave_hosts="us-east4-a:test-redis6"
+    ;;
+    "6382") master_hosts="us-east4-b:test-redis7" slave_hosts="us-east4-b:test-redis8"
+    ;;
+    "6383") master_hosts="us-east4-b:test-redis9" slave_hosts="us-east4-b:test-redis10"
+    ;;
+    "6384") master_hosts="us-east4-c:test-redis11" slave_hosts="us-east4-c:test-redis12"
+    ;;
+    "6385") master_hosts="us-east4-c:test-redis13" slave_hosts="us-east4-c:test-redis14"
     ;;
 esac
 
@@ -43,8 +55,8 @@ for host in ${master_hosts}; do
     master_host=$(echo $host | awk -F':' '{print $2}')
     
     printf "\t### Connecting to ${master_zone}:${master_host} with ${project_id} ###\n"
-    gcloud beta compute ssh --zone "${master_zone}" "${master_host}" --project "${project_id}" -- 'sudo su - ;/usr/local/runscope/redis/myredis.sh ${REDIS_PORT};sleep 5;exit;exit'
-    
+    #gcloud beta compute ssh --zone "${master_zone}" "${master_host}" --project "${project_id}" -- 'sudo su - ;/usr/local/runscope/redis/myredis.sh ${REDIS_PORT};sleep 5;exit;exit'
+    ssh -t user@$master_host "sudo /usr/local/runscope/redis/myredis.sh ${REDIS_PORT};sleep 5"
 done
 
 for host in ${slave_hosts}; do
@@ -52,5 +64,6 @@ for host in ${slave_hosts}; do
     slave_host=$(echo $host | awk -F':' '{print $2}')
     
     printf "\t### ${slave_zone}:${slave_host} with ${project_id} ###\n"
-    gcloud beta compute ssh --zone "${slave_zone}" "${slave_host}" --project "${project_id}" -- 'sudo su - ;/usr/local/runscope/redis/myredis.sh ${REDIS_PORT};sleep 5;exit;exit'    
+    #gcloud beta compute ssh --zone "${slave_zone}" "${slave_host}" --project "${project_id}" -- 'sudo su - ;/usr/local/runscope/redis/myredis.sh ${REDIS_PORT};sleep 5;exit;exit'    
+    ssh -t user@$slave_host "sudo /usr/local/runscope/redis/myredis.sh ${REDIS_PORT};sleep 5"
 done
